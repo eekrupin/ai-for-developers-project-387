@@ -1,0 +1,10 @@
+node_modules/
+.tsp-output/
+
+frontend/node_modules/
+frontend/dist/
+backend/node_modules/
+backend/dist/
+playwright-report/
+test-results/
+*.tsbuildinfo
