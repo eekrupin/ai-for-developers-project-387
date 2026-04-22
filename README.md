@@ -11,6 +11,7 @@
 
 - `tsp/main.tsp` — TypeSpec-спецификация API-контракта.
 - `docs/spec-coverage.md` — проверка покрытия сценариев владельца и гостя, а также правила глобальной занятости слота.
+- `docs/backlog.md` — план дальнейшего развития приложения: небольшие фичи, улучшения и doc-fix задачи.
 - `frontend/` — отдельное frontend-приложение.
 - `backend/` — отдельный backend, реализующий контракт поверх in-memory storage.
 - `Dockerfile` — production-сборка одного контейнера с frontend и backend.
