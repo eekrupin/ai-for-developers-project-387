@@ -1,0 +1,43 @@
+name: opencode-weekly
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Задача для OpenCode"
+        required: false
+        default: |
+          Проверь кодовую базу и найди все комментарии TODO, FIXME и HACK.
+          Сгруппируй найденное по приоритету и по файлам.
+          Если есть результаты, создай issue с краткой сводкой:
+          - что найдено
+          - в каких файлах
+          - что стоит исправить в первую очередь
+        type: string
+      model:
+        description: "Модель"
+        required: false
+        default: "opencode/minimax-m2.5-free"
+        type: string
+
+jobs:
+  opencode:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Run OpenCode
+        uses: anomalyco/opencode/github@latest
+        with:
+          model: "${{ github.event_name == 'workflow_dispatch' && inputs.model || 'opencode/minimax-m2.5-free' }}"
+          prompt: "${{ github.event_name == 'workflow_dispatch' && inputs.prompt || 'Проверь кодовую базу и найди все комментарии TODO, FIXME и HACK. Сгруппируй найденное по приоритету и по файлам. Если есть результаты, создай issue с краткой сводкой: что найдено, в каких файлах, что стоит исправить в первую очередь.' }}"
