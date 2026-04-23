@@ -7,4 +7,6 @@ backend/node_modules/
 backend/dist/
 playwright-report/
 test-results/
+lighthouse-report/
+.lighthouseci/
 *.tsbuildinfo

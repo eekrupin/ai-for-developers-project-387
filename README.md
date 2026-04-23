@@ -253,3 +253,12 @@ https://<service-name>.onrender.com
   - негативный сценарий конфликта слота с проверкой понятной ошибки в UI.
 - Конфиг `playwright.config.ts` поднимает оба сервиса через `webServer`, использует Chromium и сохраняет `trace`, `screenshots`, `video` при сбоях.
 - В CI используется workflow `.github/workflows/e2e.yml`, который ставит зависимости, браузер Playwright и запускает `npm run e2e` на `push` и `pull_request`.
+
+## Регулярный Lighthouse-аудит
+
+- Workflow `.github/workflows/lighthouse-weekly.yml` запускает ночной Lighthouse-аудит по будням и поддерживает ручной запуск через GitHub Actions.
+- В CI проект собирается командой `npm run build`, после чего backend поднимается на `http://127.0.0.1:3000` и раздает собранный frontend.
+- Для локального прогона один раз установите Chromium через `npx playwright install chromium`, затем соберите проект, запустите backend и выполните `npm run lighthouse:ci`.
+- Утренний отчет сохраняется в artifact `lighthouse-report`, а краткая сводка по метрикам публикуется в `GITHUB_STEP_SUMMARY` конкретного workflow run.
+- Внутри artifact лежат HTML- и JSON-отчеты Lighthouse, которые можно открыть утром без повторного запуска проверки.
+- По итогам отчета командой можно фиксировать отдельные doc-fix или product backlog-задачи на оптимизацию производительности, доступности и SEO.

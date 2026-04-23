@@ -1,0 +1,145 @@
+name: lighthouse-weekly
+
+on:
+  schedule:
+    - cron: "0 2 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm --prefix backend ci
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Build frontend and backend
+        run: npm run build
+
+      - name: Start backend
+        run: PORT=3000 npm run backend:start > backend.log 2>&1 &
+
+      - name: Wait for application
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          cat backend.log
+          exit 1
+
+      - name: Run Lighthouse CI
+        run: npm run lighthouse:ci
+
+      - name: Write Lighthouse summary
+        if: always()
+        run: |
+          node <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const reportDir = path.resolve('lighthouse-report');
+          if (!fs.existsSync(reportDir)) {
+            console.log('## Lighthouse report');
+            console.log('');
+            console.log('Отчет не был создан. Проверьте шаг `Run Lighthouse CI`.');
+            process.exit(0);
+          }
+
+          const reportFile = fs
+            .readdirSync(reportDir)
+            .find((file) => file.endsWith('.report.json'));
+
+          if (!reportFile) {
+            console.log('## Lighthouse report');
+            console.log('');
+            console.log('JSON-отчет не найден в artifact-каталоге.');
+            process.exit(0);
+          }
+
+          const report = JSON.parse(
+            fs.readFileSync(path.join(reportDir, reportFile), 'utf8'),
+          );
+
+          const categories = [
+            ['Performance', 'performance'],
+            ['Accessibility', 'accessibility'],
+            ['Best Practices', 'best-practices'],
+            ['SEO', 'seo'],
+          ];
+
+          console.log('## Lighthouse report');
+          console.log('');
+          console.log(`URL: ${report.finalDisplayedUrl}`);
+          console.log('');
+          console.log('| Category | Score |');
+          console.log('| --- | --- |');
+
+          for (const [label, key] of categories) {
+            const score = report.categories?.[key]?.score;
+            const normalizedScore = typeof score === 'number' ? Math.round(score * 100) : 'n/a';
+            console.log(`| ${label} | ${normalizedScore} |`);
+          }
+
+          const audits = [
+            ['First Contentful Paint', 'first-contentful-paint'],
+            ['Largest Contentful Paint', 'largest-contentful-paint'],
+            ['Total Blocking Time', 'total-blocking-time'],
+            ['Cumulative Layout Shift', 'cumulative-layout-shift'],
+          ];
+
+          console.log('');
+          console.log('| Audit | Value |');
+          console.log('| --- | --- |');
+
+          for (const [label, key] of audits) {
+            const audit = report.audits?.[key];
+            const value = audit?.displayValue || 'n/a';
+            console.log(`| ${label} | ${value} |`);
+          }
+          EOF
+
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: lighthouse-report/
+          if-no-files-found: ignore
+
+      - name: Upload backend log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-backend-log
+          path: backend.log
+          if-no-files-found: ignore

@@ -12,11 +12,13 @@
     "frontend:dev": "npm --prefix frontend run dev",
     "frontend:build": "npm --prefix frontend run build",
     "frontend:preview": "npm --prefix frontend run preview",
+    "lighthouse:ci": "node scripts/run-lhci.mjs",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:install": "playwright install chromium"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.54.2",
     "@stoplight/prism-cli": "^5.14.2",
     "@typespec/compiler": "^0.66.0",
