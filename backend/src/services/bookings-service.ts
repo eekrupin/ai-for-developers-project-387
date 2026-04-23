@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { bookingTimeConflict, isRecord, notFound, validationError } from "../domain/errors";
+import { bookingTimeConflict, isRecord, notFound, slotConflict, validationError } from "../domain/errors";
 import {
   asOptionalTrimmedString,
   asTrimmedString,
@@ -54,18 +54,14 @@ export class BookingsService {
       validationError("Booking duration must match the selected event type duration.");
     }
 
-    const conflictingBooking = this.slotsService.findConflictingBooking(startAt, endAt);
+    const bookingAttempt = this.slotsService.tryBookSlot(eventType, startAt, endAt);
 
-    if (conflictingBooking) {
-      bookingTimeConflict("The requested slot is already booked.", {
-        requestedStartAt: payload.startAt,
-        requestedEndAt: payload.endAt,
-        conflictingBookingId: conflictingBooking.id,
-      });
-    }
-
-    if (!this.slotsService.hasExactAvailableSlot(eventType, startAt, endAt)) {
-      validationError("Booking must match one of the available public slots.");
+    if (!bookingAttempt.success) {
+      if (bookingAttempt.reason === "conflict") {
+        slotConflict("The requested slot is already booked.");
+      } else {
+        slotConflict("The requested slot is not available.");
+      }
     }
 
     const booking: Booking = {
