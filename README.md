@@ -1,6 +1,6 @@
 # Календарь звонков
 
-[![Actions Status](https://github.com/eekrupin/ai-for-developers-project-386/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/eekrupin/ai-for-developers-project-386/actions)
+[![Actions Status](https://github.com/eekrupin/ai-for-developers-project-387/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/eekrupin/ai-for-developers-project-387/actions)
 
 Учебный проект по подходу API First. На текущем шаге в репозитории зафиксирован TypeSpec-контракт сервиса бронирования звонков для владельца календаря и гостя.
 
@@ -184,7 +184,7 @@ API будет доступно на `http://127.0.0.1:3000/api`.
 Что выбрать в Render Dashboard:
 
 1. `New +` -> `Web Service`
-2. Источник: GitHub-репозиторий `ai-for-developers-project-386`
+2. Источник: GitHub-репозиторий `ai-for-developers-project-387`
 3. Environment: `Docker`
 4. Branch: нужная ветка
 5. Build/Start команды вручную задавать не нужно, Render возьмет их из `Dockerfile`
