@@ -48,6 +48,24 @@ export class SlotsService {
     );
   }
 
+  tryBookSlot(eventType: EventType, startAt: Date, endAt: Date): { success: true } | { success: false; reason: "conflict" | "not_available" } {
+    const conflictingBooking = this.findConflictingBooking(startAt, endAt);
+    if (conflictingBooking) {
+      return { success: false, reason: "conflict" };
+    }
+
+    const availableSlots = this.computeAvailableSlots(eventType, { start: startAt, end: endAt });
+    const isAvailable = availableSlots.some(
+      (slot) => slot.startAt === toIsoString(startAt) && slot.endAt === toIsoString(endAt),
+    );
+
+    if (!isAvailable) {
+      return { success: false, reason: "not_available" };
+    }
+
+    return { success: true };
+  }
+
   private normalizeRange(input: SlotRangeInput, now: Date): NormalizedRange {
     if ((input.from && !input.to) || (!input.from && input.to)) {
       badRequest('Query parameters "from" and "to" must be provided together.');

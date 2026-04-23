@@ -28,6 +28,10 @@ export function bookingTimeConflict(message: string, details: unknown): never {
   throw new HttpError(409, "booking_time_conflict", message, details);
 }
 
+export function slotConflict(message: string, details?: unknown): never {
+  throw new HttpError(409, "slot_conflict", message, details);
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
