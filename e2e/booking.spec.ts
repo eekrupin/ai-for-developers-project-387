@@ -161,8 +161,8 @@ function buildEventTypeId(seed: string) {
 function buildFutureWindow(seed: string) {
   const offsetDays = getOffsetDays(seed)
   const startAt = new Date()
-  startAt.setDate(startAt.getDate() + offsetDays)
-  startAt.setHours(10 + offsetDays, 0, 0, 0)
+  startAt.setUTCDate(startAt.getUTCDate() + offsetDays)
+  startAt.setUTCHours(19, 0, 0, 0)
 
   const endAt = new Date(startAt)
   endAt.setMinutes(endAt.getMinutes() + 30)
